@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>MemoryFreedom</title>
+    <meta name="theme-color" content="#1a1a1a">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
+
+```
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    :root {
+        --bg-primary: #0a0a0a;
+        --bg-secondary: #1a1a1a;
+        --bg-tertiary: #2a2a2a;
+        --accent-primary: #00d9ff;
+        --accent-secondary: #7c3aed;
+        --text-primary: #ffffff;
+        --text-secondary: #a0a0a0;
+        --border: #333333;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --error: #ef4444;
+    }
+    
+    body {
+        font-family: 'DM Sans', sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        line-height: 1.6;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+    }
+    
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: 
+            radial-gradient(circle at 20% 20%, rgba(0, 217, 255, 0.05) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(124, 58, 237, 0.05) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: 0;
+    }
+    
+    /* Auth Screen */
+    .auth-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--bg-primary);
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        z-index: 10000;
+        padding: 20px;
+        overflow-y: auto;
+    }
+    
+    .auth-screen.hidden {
+        display: none;
+    }
+    
+    .auth-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 32px 24px;
+        max-width: 450px;
+        width: 100%;
+        text-align: center;
+        margin: auto;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    .auth-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+    }
+    
+    .auth-card h1 {
+        font-size: 24px;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .auth-card p {
+        color: var(--text-secondary);
+        margin-bottom: 24px;
+        line-height: 1.6;
+        font-size: 13px;
+    }
+    
+    .auth-input-group {
+        margin-bottom: 16px;
+        text-align: left;
+    }
+    
+    .auth-input-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .auth-input-group input {
+        width: 100%;
+        padding: 14px 16px;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-size: 16px;
+        font-family: 'DM Sans', sans-serif;
+    }
+    
+    .auth-input-group input:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+    }
+    
+    .password-strength {
+        margin-top: 8px;
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+    
+    .password-strength.weak { color: var(--error); }
+    .password-strength.medium { color: var(--warning); }
+    .password-strength.strong { color: var(--success); }
+    
+    /* Main App Styles */
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+        position: relative;
+        z-index: 1;
+        padding-bottom: 100px;
+    }
+    
+    header {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 24px 32px;
+        margin-bottom: 32px;
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+        opacity: 0.5;
+    }
+    
+    h1 {
+        font-size: 32px;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 8px;
+    }
+    
+    .subtitle {
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+    
+    .tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 32px;
+        background: var(--bg-secondary);
+        padding: 8px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        overflow-x: auto;
+    }
+    
+    .tab {
+        flex: 1;
+        min-width: 100px;
+        padding: 12px 24px;
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        font-family: 'DM Sans', sans-serif;
+        white-space: nowrap;
+    }
+    
+    .tab.active {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        box-shadow: 0 4px 12px rgba(0, 217, 255, 0.1);
+    }
+    
+    .tab:active {
+        transform: scale(0.98);
+    }
+    
+    .view {
+        display: none;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .view.active {
+        display: block;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 32px;
+        margin-bottom: 24px;
+    }
+    
+    .form-group {
+        margin-bottom: 24px;
+    }
+    
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        font-size: 14px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    input, select, textarea {
+        width: 100%;
+        padding: 14px 16px;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-size: 16px;
+        font-family: 'DM Sans', sans-serif;
+        transition: all 0.3s ease;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+    }
+    
+    textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    .btn {
+        padding: 14px 28px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: 'DM Sans', sans-serif;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn:active {
+        transform: scale(0.98);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        border: 1px solid var(--border);
+    }
+    
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .camera-upload {
+        position: relative;
+        border: 2px dashed var(--border);
+        border-radius: 12px;
+        padding: 48px 24px;
+        text-align: center;
+        background: var(--bg-tertiary);
+        cursor: pointer;
+        margin-bottom: 24px;
+    }
+    
+    .camera-upload:active {
+        background: rgba(0, 217, 255, 0.05);
+    }
+    
+    #photoInput {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        cursor: pointer;
+    }
+    
+    .camera-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.7;
+    }
+    
+    .preview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 16px;
+        margin-top: 24px;
+    }
+    
+    .preview-item {
+        position: relative;
+        aspect-ratio: 1;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+    }
+    
+    .preview-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .preview-remove {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.9);
+        border: none;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        line-height: 1;
+    }
+    
+    .preview-remove:active {
+        background: var(--error);
+    }
+    
+    .storage-level {
+        margin-bottom: 20px;
+    }
+    
+    .storage-level.nested {
+        padding-left: 24px;
+        position: relative;
+    }
+    
+    .storage-level.nested::before {
+        content: '';
+        position: absolute;
+        left: 8px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--border);
+    }
+    
+    .add-level-btn {
+        margin-top: 8px;
+        padding: 10px 20px;
+        background: rgba(0, 217, 255, 0.1);
+        border: 1px dashed var(--accent-primary);
+        border-radius: 8px;
+        color: var(--accent-primary);
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .remove-level-btn {
+        padding: 8px 16px;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        font-size: 13px;
+        margin-top: 8px;
+    }
+    
+    .ai-analyze-btn {
+        padding: 10px 16px;
+        background: linear-gradient(135deg, rgba(0, 217, 255, 0.2), rgba(124, 58, 237, 0.2));
+        border: 1px solid var(--accent-primary);
+        border-radius: 6px;
+        color: var(--accent-primary);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 8px;
+    }
+    
+    .ai-analyze-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .photo-analysis-section {
+        margin-top: 32px;
+        padding: 20px;
+        background: rgba(0, 217, 255, 0.05);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+    }
+    
+    .photo-analysis-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
+        margin-top: 16px;
+    }
+    
+    .photo-analysis-item {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+    }
+    
+    .photo-analysis-item img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 6px;
+        margin-bottom: 12px;
+    }
+    
+    .photo-description {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .photo-description input {
+        flex: 1;
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    
+    .items-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 24px;
+    }
+    
+    .item-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .item-card:active {
+        transform: scale(0.98);
+        border-color: var(--accent-primary);
+    }
+    
+    .item-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        background: var(--bg-tertiary);
+    }
+    
+    .item-content {
+        padding: 20px;
+    }
+    
+    .item-description {
+        font-weight: 600;
+        font-size: 16px;
+        margin-bottom: 12px;
+    }
+    
+    .location-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin-bottom: 12px;
+    }
+    
+    .breadcrumb-separator {
+        opacity: 0.5;
+    }
+    
+    .tags {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin: 8px 0;
+    }
+    
+    .tag {
+        padding: 4px 10px;
+        background: rgba(124, 58, 237, 0.2);
+        border: 1px solid rgba(124, 58, 237, 0.3);
+        border-radius: 4px;
+        font-size: 11px;
+        color: var(--accent-secondary);
+    }
+    
+    .item-meta {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+        font-size: 12px;
+        color: var(--text-secondary);
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-secondary);
+    }
+    
+    .empty-icon {
+        font-size: 64px;
+        opacity: 0.3;
+        margin-bottom: 16px;
+    }
+    
+    .search-container {
+        position: relative;
+        margin-bottom: 24px;
+    }
+    
+    .search-input {
+        padding-left: 48px;
+        font-size: 18px;
+    }
+    
+    .search-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 20px;
+        opacity: 0.5;
+    }
+    
+    .filters {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+    
+    .filter-btn {
+        padding: 8px 16px;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        font-size: 14px;
+    }
+    
+    .filter-btn.active {
+        background: rgba(0, 217, 255, 0.1);
+        border-color: var(--accent-primary);
+        color: var(--text-primary);
+    }
+    
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        padding: 20px;
+    }
+    
+    .modal.open {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        max-width: 800px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 32px;
+        position: relative;
+    }
+    
+    .modal-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 32px;
+        cursor: pointer;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+    }
+    
+    .detail-images {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+    
+    .detail-image {
+        width: 100%;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+    
+    .detail-section {
+        margin-bottom: 24px;
+    }
+    
+    .detail-section h3 {
+        font-size: 14px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+    
+    .detail-section p {
+        font-size: 16px;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+    }
+    
+    .toast {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 16px 24px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        gap: 12px;
+        z-index: 10001;
+        min-width: 300px;
+        max-width: 90%;
+    }
+    
+    .toast.show {
+        display: flex;
+        animation: slideUp 0.3s ease;
+    }
+    
+    @keyframes slideUp {
+        from { opacity: 0; transform: translate(-50%, 20px); }
+        to { opacity: 1; transform: translate(-50%, 0); }
+    }
+    
+    .toast.success { border-left: 4px solid var(--success); }
+    .toast.error { border-left: 4px solid var(--error); }
+    .toast.warning { border-left: 4px solid var(--warning); }
+    .toast.info { border-left: 4px solid var(--accent-primary); }
+    
+    .sync-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+    
+    .sync-status.syncing {
+        border-color: var(--accent-primary);
+        color: var(--accent-primary);
+    }
+    
+    .sync-status.synced {
+        border-color: var(--success);
+        color: var(--success);
+    }
+    
+    .sync-status.error {
+        border-color: var(--error);
+        color: var(--error);
+    }
+    
+    @media (max-width: 768px) {
+        .container {
+            padding: 12px;
+            padding-bottom: 100px;
+        }
+        
+        header {
+            padding: 20px;
+        }
+        
+        h1 {
+            font-size: 24px;
+        }
+        
+        .card {
+            padding: 20px;
+        }
+        
+        .items-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .auth-card {
+            padding: 32px 24px;
+        }
+    }
+</style>
+```
+
+</head>
+<body>
+    <!-- Auth Screen -->
+    <div class="auth-screen" id="authScreen">
+        <div class="auth-card">
+            <div class="auth-icon">🔐</div>
+            <h1>Welcome to MemoryFreedom</h1>
+            <p id="authMessage">Enter your master password to unlock your encrypted storage</p>
+
+```
+        <div id="setupMode" style="display: none;">
+            <div class="auth-input-group">
+                <label>GitHub Username</label>
+                <input type="text" id="setupGithubUser" placeholder="your-username" autocomplete="username">
+            </div>
+            
+            <div class="auth-input-group">
+                <label>GitHub Repository Name</label>
+                <input type="text" id="setupGithubRepo" placeholder="MemoryFreedom" autocomplete="off">
+            </div>
+            
+            <div class="auth-input-group">
+                <label>GitHub Personal Access Token</label>
+                <input type="password" id="setupGithubToken" placeholder="ghp_..." autocomplete="off">
+                <p style="font-size: 11px; color: var(--text-secondary); margin-top: 6px;">
+                    Need a token? Go to GitHub Settings → Developer Settings → Personal Access Tokens → Generate new token (classic) → Enable "repo" scope
+                </p>
+            </div>
+            
+            <div class="auth-input-group">
+                <label>Create Master Password</label>
+                <input type="password" id="setupPassword" placeholder="Min 8 characters" autocomplete="new-password" oninput="checkPasswordStrength()">
+                <div id="passwordStrength" class="password-strength"></div>
+            </div>
+            
+            <div class="auth-input-group">
+                <label>Confirm Password</label>
+                <input type="password" id="setupPasswordConfirm" placeholder="Re-enter password" autocomplete="new-password">
+            </div>
+            
+            <button class="btn btn-primary" onclick="completeSetup()" style="width: 100%;">
+                <span>🚀</span>
+                <span>Complete Setup</span>
+            </button>
+        </div>
+        
+        <div id="unlockMode">
+            <div class="auth-input-group">
+                <label>Master Password</label>
+                <input type="password" id="unlockPassword" placeholder="Enter your password" autocomplete="current-password" onkeypress="if(event.key==='Enter') unlockApp()">
+            </div>
+            
+            <button class="btn btn-primary" onclick="unlockApp()" style="width: 100%; margin-bottom: 12px;">
+                <span>🔓</span>
+                <span>Unlock</span>
+            </button>
+            
+            <button class="btn btn-secondary" onclick="resetApp()" style="width: 100%;">
+                Reset & Start Over
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Main App -->
+<div class="container" id="mainApp" style="display: none;">
+    <header>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div>
+                <h1>MemoryFreedom</h1>
+                <p class="subtitle">Your encrypted personal storage system</p>
+            </div>
+            <div class="sync-status" id="syncStatus">
+                <span id="syncIcon">☁️</span>
+                <span id="syncText">Synced</span>
+            </div>
+        </div>
+    </header>
+    
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('add')">➕ Add</button>
+        <button class="tab" onclick="switchTab('browse')">🔍 Browse</button>
+        <button class="tab" onclick="switchTab('settings')">⚙️ Settings</button>
+    </div>
+    
+    <!-- Add Items View -->
+    <div id="add-view" class="view active">
+        <div class="card">
+            <div class="camera-upload" onclick="document.getElementById('photoInput').click()">
+                <input type="file" id="photoInput" accept="image/*" multiple capture="environment">
+                <div class="camera-icon">📷</div>
+                <p style="color: var(--text-secondary); font-size: 14px;">Tap to take or upload photos</p>
+            </div>
+            
+            <div id="previewGrid" class="preview-grid"></div>
+            
+            <div id="itemForm" style="display: none; margin-top: 32px;">
+                <h2 style="margin-bottom: 24px;">Item Details</h2>
+                
+                <div id="photoAnalysisSection" class="photo-analysis-section" style="display: none;">
+                    <h3 style="font-size: 16px; margin-bottom: 12px;">AI Analysis</h3>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+                        Click ✨ AI to identify each photo
+                    </p>
+                    <div id="photoAnalysisGrid" class="photo-analysis-grid"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Description *</label>
+                    <input type="text" id="description" placeholder="What is this item?">
+                </div>
+                
+                <div id="nestedStorage">
+                    <div class="storage-level" data-level="0">
+                        <label>Location Level 1 (e.g., Room) *</label>
+                        <input type="text" class="location-input" data-level="0" placeholder="e.g., Garage, Basement, Attic">
+                        <button class="add-level-btn" onclick="addStorageLevel(0)">
+                            ➕ Add Sub-location
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input type="number" id="quantity" value="1" min="1">
+                </div>
+                
+                <div class="form-group">
+                    <label>Tags (Optional)</label>
+                    <input type="text" id="tags" placeholder="e.g., seasonal, fragile, kids">
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Separate with commas</p>
+                </div>
+                
+                <div class="form-group">
+                    <label>Notes (Optional)</label>
+                    <textarea id="notes" placeholder="Any additional information..."></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="saveItem()">💾 Save Item</button>
+                    <button class="btn btn-secondary" onclick="cancelAdd()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Browse View -->
+    <div id="browse-view" class="view">
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search for items..." oninput="searchItems()">
+        </div>
+        
+        <div class="filters" id="filterButtons"></div>
+        
+        <div id="itemsGrid" class="items-grid"></div>
+        
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-icon">📦</div>
+            <h3>No items yet</h3>
+            <p>Start adding items to track your storage</p>
+        </div>
+    </div>
+    
+    <!-- Settings View -->
+    <div id="settings-view" class="view">
+        <div class="card">
+            <h2 style="margin-bottom: 24px;">Settings</h2>
+            
+            <div class="form-group">
+                <label>Your Name</label>
+                <input type="text" id="userName" placeholder="Enter your name">
+            </div>
+            
+            <div class="form-group">
+                <label>Anthropic API Key (Optional - for AI)</label>
+                <input type="password" id="apiKey" placeholder="sk-ant-...">
+                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">
+                    Get your key at <a href="https://console.anthropic.com/" target="_blank" style="color: var(--accent-primary);">console.anthropic.com</a>
+                </p>
+            </div>
+            
+            <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+            
+            <div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border);">
+                <h3 style="margin-bottom: 16px;">GitHub Connection</h3>
+                <div style="background: var(--bg-tertiary); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                    <p style="font-size: 13px; margin-bottom: 8px;"><strong>Repository:</strong> <span id="displayRepo"></span></p>
+                    <p style="font-size: 13px;"><strong>Status:</strong> <span id="displayStatus">Connected</span></p>
+                </div>
+                <button class="btn btn-secondary" onclick="manualSync()">🔄 Sync Now</button>
+            </div>
+            
+            <div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border);">
+                <h3 style="margin-bottom: 16px; color: var(--error);">Danger Zone</h3>
+                <button class="btn btn-secondary" onclick="exportUnencrypted()" style="margin-right: 12px;">
+                    📥 Export Unencrypted Backup
+                </button>
+                <button class="btn btn-secondary" onclick="changePassword()" style="margin-right: 12px;">
+                    🔑 Change Password
+                </button>
+                <button class="btn btn-secondary" onclick="lockApp()" style="margin-right: 12px;">
+                    🔒 Lock App
+                </button>
+                <button class="btn btn-secondary" onclick="resetApp()" style="background: var(--error); color: white;">
+                    🗑️ Reset Everything
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Item Detail Modal -->
+<div class="modal" id="itemModal" onclick="if(event.target===this) closeItemModal()">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeItemModal()">×</button>
+        <div id="itemModalContent"></div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+    <span id="toastMessage"></span>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+<script>
+    // Global state
+    let masterPassword = null;
+    let githubConfig = null;
+    let currentPhotos = [];
+    let apiKey = '';
+    let userName = 'User';
+    let items = [];
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+        checkSetup();
+        setupPhotoInput();
+    });
+    
+    // Check if setup is complete
+    function checkSetup() {
+        const config = localStorage.getItem('github_config');
+        const hasPassword = localStorage.getItem('password_hash');
+        
+        if (!config || !hasPassword) {
+            // First time setup
+            document.getElementById('authMessage').textContent = 'First time setup - Configure your encrypted cloud storage';
+            document.getElementById('setupMode').style.display = 'block';
+            document.getElementById('unlockMode').style.display = 'none';
+        } else {
+            // Show unlock screen
+            document.getElementById('setupMode').style.display = 'none';
+            document.getElementById('unlockMode').style.display = 'block';
+        }
+    }
+    
+    // Password strength checker
+    function checkPasswordStrength() {
+        const password = document.getElementById('setupPassword').value;
+        const strengthEl = document.getElementById('passwordStrength');
+        
+        if (password.length === 0) {
+            strengthEl.textContent = '';
+            return;
+        }
+        
+        let strength = 0;
+        if (password.length >= 8) strength++;
+        if (password.length >= 12) strength++;
+        if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+        if (/[0-9]/.test(password)) strength++;
+        if (/[^a-zA-Z0-9]/.test(password)) strength++;
+        
+        if (strength <= 2) {
+            strengthEl.textContent = '⚠️ Weak password';
+            strengthEl.className = 'password-strength weak';
+        } else if (strength <= 4) {
+            strengthEl.textContent = '✓ Medium strength';
+            strengthEl.className = 'password-strength medium';
+        } else {
+            strengthEl.textContent = '✓ Strong password!';
+            strengthEl.className = 'password-strength strong';
+        }
+    }
+    
+    // Complete setup
+    async function completeSetup() {
+        const githubUser = document.getElementById('setupGithubUser').value.trim();
+        const githubRepo = document.getElementById('setupGithubRepo').value.trim();
+        const githubToken = document.getElementById('setupGithubToken').value.trim();
+        const password = document.getElementById('setupPassword').value;
+        const passwordConfirm = document.getElementById('setupPasswordConfirm').value;
+        
+        if (!githubUser || !githubRepo || !githubToken) {
+            showToast('Fill in all GitHub fields', 'error');
+            return;
+        }
+        
+        if (password.length < 8) {
+            showToast('Password must be at least 8 characters', 'error');
+            return;
+        }
+        
+        if (password !== passwordConfirm) {
+            showToast('Passwords do not match', 'error');
+            return;
+        }
+        
+        // Save config
+        githubConfig = { user: githubUser, repo: githubRepo, token: githubToken };
+        localStorage.setItem('github_config', JSON.stringify(githubConfig));
+        
+        // Hash and save password
+        const passwordHash = CryptoJS.SHA256(password).toString();
+        localStorage.setItem('password_hash', passwordHash);
+        
+        // Set master password
+        masterPassword = password;
+        
+        // Initialize empty data on GitHub
+        await saveToGithub([]);
+        
+        showToast('Setup complete! 🎉', 'success');
+        
+        // Show main app
+        setTimeout(() => {
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('mainApp').style.display = 'block';
+            loadSettings();
+            loadItems();
+        }, 1000);
+    }
+    
+    // Unlock app
+    async function unlockApp() {
+        const password = document.getElementById('unlockPassword').value;
+        
+        if (!password) {
+            showToast('Enter your password', 'error');
+            return;
+        }
+        
+        // Check password
+        const passwordHash = CryptoJS.SHA256(password).toString();
+        const savedHash = localStorage.getItem('password_hash');
+        
+        if (passwordHash !== savedHash) {
+            showToast('Incorrect password', 'error');
+            return;
+        }
+        
+        // Load config
+        githubConfig = JSON.parse(localStorage.getItem('github_config'));
+        masterPassword = password;
+        
+        // Show main app
+        document.getElementById('authScreen').classList.add('hidden');
+        document.getElementById('mainApp').style.display = 'block';
+        
+        // Load data
+        loadSettings();
+        await loadItems();
+        
+        showToast('Welcome back! 🎉', 'success');
+    }
+    
+    // Reset app
+    function resetApp() {
+        if (!confirm('This will delete EVERYTHING including your GitHub config. Continue?')) return;
+        if (prompt('Type DELETE to confirm:') !== 'DELETE') return;
+        
+        localStorage.clear();
+        location.reload();
+    }
+    
+    // Lock app
+    function lockApp() {
+        masterPassword = null;
+        items = [];
+        currentPhotos = [];
+        document.getElementById('mainApp').style.display = 'none';
+        document.getElementById('authScreen').classList.remove('hidden');
+        document.getElementById('unlockPassword').value = '';
+        checkSetup();
+    }
+    
+    // Change password
+    async function changePassword() {
+        const oldPassword = prompt('Enter current password:');
+        if (!oldPassword) return;
+        
+        const oldHash = CryptoJS.SHA256(oldPassword).toString();
+        if (oldHash !== localStorage.getItem('password_hash')) {
+            showToast('Incorrect password', 'error');
+            return;
+        }
+        
+        const newPassword = prompt('Enter new password (min 8 characters):');
+        if (!newPassword || newPassword.length < 8) {
+            showToast('Password must be at least 8 characters', 'error');
+            return;
+        }
+        
+        const confirmPassword = prompt('Confirm new password:');
+        if (newPassword !== confirmPassword) {
+            showToast('Passwords do not match', 'error');
+            return;
+        }
+        
+        // Re-encrypt data with new password
+        const newHash = CryptoJS.SHA256(newPassword).toString();
+        localStorage.setItem('password_hash', newHash);
+        masterPassword = newPassword;
+        
+        // Re-save data with new password
+        await saveToGithub(items);
+        
+        showToast('Password changed successfully!', 'success');
+    }
+    
+    // Encrypt data
+    function encryptData(data) {
+        const jsonStr = JSON.stringify(data);
+        return CryptoJS.AES.encrypt(jsonStr, masterPassword).toString();
+    }
+    
+    // Decrypt data
+    function decryptData(encrypted) {
+        try {
+            const decrypted = CryptoJS.AES.decrypt(encrypted, masterPassword);
+            const jsonStr = decrypted.toString(CryptoJS.enc.Utf8);
+            return JSON.parse(jsonStr);
+        } catch (error) {
+            console.error('Decryption failed:', error);
+            return null;
+        }
+    }
+    
+    // Save to GitHub
+    async function saveToGithub(data) {
+        setSyncStatus('syncing', 'Syncing...');
+        
+        try {
+            const encrypted = encryptData(data);
+            
+            // Get current file SHA (needed for updates)
+            let sha = null;
+            try {
+                const getResponse = await fetch(
+                    `https://api.github.com/repos/${githubConfig.user}/${githubConfig.repo}/contents/data/items.json`,
+                    {
+                        headers: {
+                            'Authorization': `token ${githubConfig.token}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    }
+                );
+                
+                if (getResponse.ok) {
+                    const getData = await getResponse.json();
+                    sha = getData.sha;
+                }
+            } catch (e) {
+                // File doesn't exist yet, that's ok
+            }
+            
+            // Save file
+            const response = await fetch(
+                `https://api.github.com/repos/${githubConfig.user}/${githubConfig.repo}/contents/data/items.json`,
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${githubConfig.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Update storage data - ${new Date().toISOString()}`,
+                        content: btoa(encrypted),
+                        sha: sha
+                    })
+                }
+            );
+            
+            if (!response.ok) {
+                throw new Error('GitHub API error');
+            }
+            
+            setSyncStatus('synced', 'Synced');
+            return true;
+        } catch (error) {
+            console.error('Save to GitHub failed:', error);
+            setSyncStatus('error', 'Sync failed');
+            showToast('Sync failed - check GitHub token', 'error');
+            return false;
+        }
+    }
+    
+    // Load from GitHub
+    async function loadFromGithub() {
+        setSyncStatus('syncing', 'Loading...');
+        
+        try {
+            const response = await fetch(
+                `https://api.github.com/repos/${githubConfig.user}/${githubConfig.repo}/contents/data/items.json`,
+                {
+                    headers: {
+                        'Authorization': `token ${githubConfig.token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                }
+            );
+            
+            if (!response.ok) {
+                if (response.status === 404) {
+                    // File doesn't exist yet
+                    setSyncStatus('synced', 'Synced');
+                    return [];
+                }
+                throw new Error('GitHub API error');
+            }
+            
+            const data = await response.json();
+            const encrypted = atob(data.content);
+            const decrypted = decryptData(encrypted);
+            
+            if (!decrypted) {
+                throw new Error('Decryption failed');
+            }
+            
+            setSyncStatus('synced', 'Synced');
+            return decrypted;
+        } catch (error) {
+            console.error('Load from GitHub failed:', error);
+            setSyncStatus('error', 'Load failed');
+            showToast('Failed to load from GitHub', 'error');
+            return [];
+        }
+    }
+    
+    // Manual sync
+    async function manualSync() {
+        items = await loadFromGithub();
+        displayItems(items);
+        showToast('Synced from GitHub', 'success');
+    }
+    
+    // Set sync status
+    function setSyncStatus(status, text) {
+        const statusEl = document.getElementById('syncStatus');
+        const iconEl = document.getElementById('syncIcon');
+        const textEl = document.getElementById('syncText');
+        
+        statusEl.className = `sync-status ${status}`;
+        textEl.textContent = text;
+        
+        if (status === 'syncing') {
+            iconEl.textContent = '⏳';
+        } else if (status === 'synced') {
+            iconEl.textContent = '✓';
+        } else if (status === 'error') {
+            iconEl.textContent = '⚠️';
+        }
+    }
+    
+    // Photo input setup
+    function setupPhotoInput() {
+        document.getElementById('photoInput').addEventListener('change', handlePhotoUpload);
+    }
+    
+    // Handle photo upload
+    function handlePhotoUpload(event) {
+        const files = Array.from(event.target.files);
+        if (files.length === 0) return;
+        
+        files.forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                currentPhotos.push({
+                    data: e.target.result,
+                    description: ''
+                });
+                updatePreviewGrid();
+                showItemForm();
+            };
+            reader.readAsDataURL(file);
+        });
+        
+        event.target.value = '';
+    }
+    
+    // Update preview grid
+    function updatePreviewGrid() {
+        const grid = document.getElementById('previewGrid');
+        grid.innerHTML = currentPhotos.map((photo, index) => `
+            <div class="preview-item">
+                <img src="${photo.data}" alt="Photo ${index + 1}">
+                <button class="preview-remove" onclick="removePhoto(${index})">×</button>
+            </div>
+        `).join('');
+    }
+    
+    // Remove photo
+    function removePhoto(index) {
+        currentPhotos.splice(index, 1);
+        updatePreviewGrid();
+        if (currentPhotos.length === 0) {
+            document.getElementById('itemForm').style.display = 'none';
+            document.getElementById('photoAnalysisSection').style.display = 'none';
+        } else {
+            updatePhotoAnalysisGrid();
+        }
+    }
+    
+    // Show item form
+    function showItemForm() {
+        document.getElementById('itemForm').style.display = 'block';
+        if (currentPhotos.length > 0 && apiKey) {
+            document.getElementById('photoAnalysisSection').style.display = 'block';
+            updatePhotoAnalysisGrid();
+        }
+    }
+    
+    // Update photo analysis grid
+    function updatePhotoAnalysisGrid() {
+        if (!apiKey) return;
+        
+        const grid = document.getElementById('photoAnalysisGrid');
+        grid.innerHTML = currentPhotos.map((photo, index) => `
+            <div class="photo-analysis-item">
+                <img src="${photo.data}" alt="Photo ${index + 1}">
+                <div class="photo-description">
+                    <input type="text" 
+                           value="${photo.description}" 
+                           placeholder="Description..." 
+                           onchange="updatePhotoDescription(${index}, this.value)"
+                           ${photo.description ? '' : 'readonly'}>
+                    <button class="ai-analyze-btn" onclick="analyzePhoto(${index})" id="analyzeBtn${index}">
+                        ✨ AI
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    // Update photo description
+    function updatePhotoDescription(index, description) {
+        currentPhotos[index].description = description;
+        if (index === 0 && !document.getElementById('description').value) {
+            document.getElementById('description').value = description;
+        }
+    }
+    
+    // Analyze photo with AI
+    async function analyzePhoto(index) {
+        if (!apiKey) {
+            showToast('Set API key in Settings first', 'warning');
+            return;
+        }
+        
+        const btn = document.getElementById(`analyzeBtn${index}`);
+        btn.disabled = true;
+        btn.innerHTML = '⏳ ...';
+        
+        try {
+            const base64Data = currentPhotos[index].data.split(',')[1];
+            
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': apiKey,
+                    'anthropic-version': '2023-06-01'
+                },
+                body: JSON.stringify({
+                    model: 'claude-sonnet-4-20250514',
+                    max_tokens: 1024,
+                    messages: [{
+                        role: 'user',
+                        content: [
+                            {
+                                type: 'image',
+                                source: {
+                                    type: 'base64',
+                                    media_type: 'image/jpeg',
+                                    data: base64Data
+                                }
+                            },
+                            {
+                                type: 'text',
+                                text: 'Identify this object in 2-5 words. Be specific. Just the name, nothing else.'
+                            }
+                        ]
+                    }]
+                })
+            });
+            
+            const data = await response.json();
+            if (data.content && data.content[0]) {
+                const description = data.content[0].text.trim();
+                currentPhotos[index].description = description;
+                
+                const inputs = document.querySelectorAll('.photo-description input');
+                if (inputs[index]) {
+                    inputs[index].value = description;
+                    inputs[index].removeAttribute('readonly');
+                }
+                
+                if (index === 0 && !document.getElementById('description').value) {
+                    document.getElementById('description').value = description;
+                }
+                
+                btn.innerHTML = '✓ Done';
+                setTimeout(() => {
+                    btn.innerHTML = '✨ AI';
+                    btn.disabled = false;
+                }, 2000);
+            }
+        } catch (error) {
+            showToast('AI analysis failed', 'error');
+            btn.innerHTML = '✨ AI';
+            btn.disabled = false;
+        }
+    }
+    
+    // Storage levels
+    function addStorageLevel(parentLevel) {
+        const newLevel = parentLevel + 1;
+        const container = document.getElementById('nestedStorage');
+        
+        const levelDiv = document.createElement('div');
+        levelDiv.className = 'storage-level nested';
+        levelDiv.setAttribute('data-level', newLevel);
+        
+        const levelNames = ['Room', 'Area', 'Container', 'Section', 'Bin', 'Sub-bin'];
+        const levelName = levelNames[newLevel] || `Level ${newLevel + 1}`;
+        
+        levelDiv.innerHTML = `
+            <label>Location Level ${newLevel + 1} (e.g., ${levelName})</label>
+            <input type="text" class="location-input" data-level="${newLevel}" placeholder="e.g., ${levelName}">
+            <button class="remove-level-btn" onclick="removeStorageLevel(${newLevel})">× Remove</button>
+            <button class="add-level-btn" onclick="addStorageLevel(${newLevel})">➕ Add Sub-location</button>
+        `;
+        
+        const parentDiv = container.querySelector(`[data-level="${parentLevel}"]`);
+        if (parentDiv.nextSibling) {
+            container.insertBefore(levelDiv, parentDiv.nextSibling);
+        } else {
+            container.appendChild(levelDiv);
+        }
+    }
+    
+    function removeStorageLevel(level) {
+        const container = document.getElementById('nestedStorage');
+        const allLevels = Array.from(container.querySelectorAll('.storage-level'));
+        allLevels.forEach(div => {
+            const divLevel = parseInt(div.getAttribute('data-level'));
+            if (divLevel >= level) div.remove();
+        });
+    }
+    
+    function getStorageHierarchy() {
+        const inputs = document.querySelectorAll('.location-input');
+        const hierarchy = [];
+        inputs.forEach(input => {
+            const value = input.value.trim();
+            if (value) hierarchy.push(value);
+        });
+        return hierarchy;
+    }
+    
+    // Save item
+    async function saveItem() {
+        const description = document.getElementById('description').value.trim();
+        const locationHierarchy = getStorageHierarchy();
+        const quantity = parseInt(document.getElementById('quantity').value) || 1;
+        const tags = document.getElementById('tags').value.trim();
+        const notes = document.getElementById('notes').value.trim();
+        
+        if (!description) {
+            showToast('Add a description', 'error');
+            return;
+        }
+        
+        if (locationHierarchy.length === 0) {
+            showToast('Add at least one location', 'error');
+            return;
+        }
+        
+        if (currentPhotos.length === 0) {
+            showToast('Add at least one photo', 'error');
+            return;
+        }
+        
+        const item = {
+            id: Date.now().toString(),
+            description,
+            locationHierarchy,
+            quantity,
+            tags: tags ? tags.split(',').map(t => t.trim()).filter(t => t) : [],
+            notes,
+            photos: currentPhotos,
+            addedBy: userName,
+            addedAt: new Date().toISOString()
+        };
+        
+        items.push(item);
+        await saveToGithub(items);
+        
+        showToast('Item saved!', 'success');
+        resetForm();
+        switchTab('browse');
+        displayItems(items);
+    }
+    
+    // Cancel add
+    function cancelAdd() {
+        resetForm();
+    }
+    
+    // Reset form
+    function resetForm() {
+        currentPhotos = [];
+        updatePreviewGrid();
+        document.getElementById('description').value = '';
+        document.getElementById('quantity').value = '1';
+        document.getElementById('tags').value = '';
+        document.getElementById('notes').value = '';
+        document.getElementById('itemForm').style.display = 'none';
+        document.getElementById('photoAnalysisSection').style.display = 'none';
+        
+        const container = document.getElementById('nestedStorage');
+        container.innerHTML = `
+            <div class="storage-level" data-level="0">
+                <label>Location Level 1 (e.g., Room) *</label>
+                <input type="text" class="location-input" data-level="0" placeholder="e.g., Garage, Basement, Attic">
+                <button class="add-level-btn" onclick="addStorageLevel(0)">➕ Add Sub-location</button>
+            </div>
+        `;
+    }
+    
+    // Load items
+    async function loadItems() {
+        items = await loadFromGithub();
+        displayItems(items);
+        updateFilters(items);
+        updateRepoDisplay();
+    }
+    
+    // Display items
+    function displayItems(itemsToDisplay) {
+        const grid = document.getElementById('itemsGrid');
+        const emptyState = document.getElementById('emptyState');
+        
+        if (itemsToDisplay.length === 0) {
+            grid.innerHTML = '';
+            emptyState.style.display = 'block';
+            return;
+        }
+        
+        emptyState.style.display = 'none';
+        grid.innerHTML = itemsToDisplay.map(item => `
+            <div class="item-card" onclick='showItemDetail(${JSON.stringify(item).replace(/'/g, "&#39;")})'>
+                <img src="${item.photos[0].data}" alt="${item.description}" class="item-image">
+                <div class="item-content">
+                    <div class="item-description">${item.description}</div>
+                    <div class="location-breadcrumb">
+                        ${item.locationHierarchy.map((level, i) => `
+                            <span>${level}</span>
+                            ${i < item.locationHierarchy.length - 1 ? '<span class="breadcrumb-separator">›</span>' : ''}
+                        `).join('')}
+                    </div>
+                    ${item.tags.length > 0 ? `
+                        <div class="tags">
+                            ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                    <div class="item-meta">
+                        <span>Qty: ${item.quantity}</span>
+                        <span>${item.addedBy}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    // Update filters
+    function updateFilters(itemsToFilter) {
+        const rooms = [...new Set(itemsToFilter.map(i => i.locationHierarchy[0]))];
+        const tags = [...new Set(itemsToFilter.flatMap(i => i.tags))];
+        
+        const container = document.getElementById('filterButtons');
+        container.innerHTML = `
+            <button class="filter-btn active" onclick="filterItems('all')">All (${itemsToFilter.length})</button>
+            ${rooms.map(room => `
+                <button class="filter-btn" onclick="filterItems('room', '${room}')">${room}</button>
+            `).join('')}
+            ${tags.map(tag => `
+                <button class="filter-btn" onclick="filterItems('tag', '${tag}')">#${tag}</button>
+            `).join('')}
+        `;
+    }
+    
+    // Filter items
+    function filterItems(type, value) {
+        let filtered = items;
+        
+        if (type === 'room') {
+            filtered = items.filter(i => i.locationHierarchy[0] === value);
+        } else if (type === 'tag') {
+            filtered = items.filter(i => i.tags.includes(value));
+        }
+        
+        displayItems(filtered);
+        
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+    
+    // Search items
+    function searchItems() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        
+        if (!query) {
+            displayItems(items);
+            return;
+        }
+        
+        const filtered = items.filter(item => 
+            item.description.toLowerCase().includes(query) ||
+            item.locationHierarchy.some(level => level.toLowerCase().includes(query)) ||
+            item.tags.some(tag => tag.toLowerCase().includes(query)) ||
+            (item.notes && item.notes.toLowerCase().includes(query))
+        );
+        
+        displayItems(filtered);
+    }
+    
+    // Show item detail
+    function showItemDetail(item) {
+        const modal = document.getElementById('itemModal');
+        const content = document.getElementById('itemModalContent');
+        
+        content.innerHTML = `
+            <h2 style="margin-bottom: 24px;">${item.description}</h2>
+            
+            <div class="detail-images">
+                ${item.photos.map(photo => `
+                    <img src="${photo.data}" class="detail-image" onclick="window.open('${photo.data}')">
+                `).join('')}
+            </div>
+            
+            <div class="detail-section">
+                <h3>Location</h3>
+                <div class="location-breadcrumb" style="font-size: 16px;">
+                    ${item.locationHierarchy.map((level, i) => `
+                        <span><strong>${level}</strong></span>
+                        ${i < item.locationHierarchy.length - 1 ? '<span class="breadcrumb-separator">›</span>' : ''}
+                    `).join('')}
+                </div>
+            </div>
+            
+            <div class="detail-section">
+                <h3>Details</h3>
+                <p><strong>Quantity:</strong> ${item.quantity}</p>
+                ${item.tags.length > 0 ? `
+                    <p><strong>Tags:</strong> ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join(' ')}</p>
+                ` : ''}
+                ${item.notes ? `<p><strong>Notes:</strong> ${item.notes}</p>` : ''}
+            </div>
+            
+            <div class="detail-section">
+                <p style="font-size: 12px; color: var(--text-secondary);">
+                    Added by ${item.addedBy} on ${new Date(item.addedAt).toLocaleDateString()}
+                </p>
+            </div>
+            
+            <button class="btn btn-secondary" onclick="deleteItem('${item.id}')" style="background: var(--error); color: white;">
+                🗑️ Delete Item
+            </button>
+        `;
+        
+        modal.classList.add('open');
+    }
+    
+    // Close modal
+    function closeItemModal() {
+        document.getElementById('itemModal').classList.remove('open');
+    }
+    
+    // Delete item
+    async function deleteItem(itemId) {
+        if (!confirm('Delete this item?')) return;
+        
+        items = items.filter(i => i.id !== itemId);
+        await saveToGithub(items);
+        
+        closeItemModal();
+        displayItems(items);
+        updateFilters(items);
+        showToast('Item deleted', 'success');
+    }
+    
+    // Tab switching
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+        
+        event.target.classList.add('active');
+        document.getElementById(`${tabName}-view`).classList.add('active');
+    }
+    
+    // Settings
+    function loadSettings() {
+        userName = localStorage.getItem('userName') || 'User';
+        apiKey = localStorage.getItem('apiKey') || '';
+        
+        document.getElementById('userName').value = userName;
+        document.getElementById('apiKey').value = apiKey;
+    }
+    
+    function saveSettings() {
+        userName = document.getElementById('userName').value.trim() || 'User';
+        apiKey = document.getElementById('apiKey').value.trim();
+        
+        localStorage.setItem('userName', userName);
+        localStorage.setItem('apiKey', apiKey);
+        
+        showToast('Settings saved!', 'success');
+    }
+    
+    function updateRepoDisplay() {
+        if (githubConfig) {
+            document.getElementById('displayRepo').textContent = `${githubConfig.user}/${githubConfig.repo}`;
+            document.getElementById('displayStatus').textContent = 'Connected ✓';
+            document.getElementById('displayStatus').style.color = 'var(--success)';
+        }
+    }
+    
+    // Export unencrypted
+    function exportUnencrypted() {
+        const data = JSON.stringify(items, null, 2);
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `memory-freedom-backup-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        
+        showToast('Unencrypted backup exported!', 'success');
+    }
+    
+    // Toast
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        
+        toast.className = `toast ${type}`;
+        toastMessage.textContent = message;
+        toast.classList.add('show');
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+</script>
+```
+
+</body>
+</html>
